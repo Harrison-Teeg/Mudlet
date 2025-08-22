@@ -164,9 +164,9 @@ void GLWidget::slot_defaultView()
 {
     // Do not attempt to change between 2D and 3D map modes as the button to
     // activate this slot is only visible in the 3D mode anyhow!
-    xRot = 1.0;
-    yRot = 5.0;
-    zRot = 10.0;
+    xEye = 10.0;
+    yEye = 1.0;
+    zEye = 0.0;
     mScale = 1.0;
     is2DView = false;
     update();
@@ -174,9 +174,9 @@ void GLWidget::slot_defaultView()
 
 void GLWidget::slot_sideView()
 {
-    xRot = 7.0;
-    yRot = -10.0;
-    zRot = 0.0;
+    xEye = 7.0;
+    yEye = -10.0;
+    zEye = 0.0;
     mScale = 1.0;
     is2DView = false;
     update();
@@ -184,9 +184,9 @@ void GLWidget::slot_sideView()
 
 void GLWidget::slot_topView()
 {
-    xRot = 0.0;
-    yRot = 0.0;
-    zRot = 15.0;
+    xEye = 0.0;
+    yEye = 0.0;
+    zEye = 15.0;
     mScale = 1.0;
     // This is the ONLY place this value is set:
     is2DView = true;
@@ -205,7 +205,7 @@ void GLWidget::slot_setScale(int angle)
 void GLWidget::slot_setCameraPositionX(int angle)
 {
     qNormalizeAngle(angle);
-    xRot = angle;
+    xEye = angle;
     is2DView = false;
     update();
 }
@@ -213,7 +213,7 @@ void GLWidget::slot_setCameraPositionX(int angle)
 void GLWidget::slot_setCameraPositionY(int angle)
 {
     qNormalizeAngle(angle);
-    yRot = angle;
+    yEye = angle;
     is2DView = false;
     update();
 }
@@ -221,7 +221,7 @@ void GLWidget::slot_setCameraPositionY(int angle)
 void GLWidget::slot_setCameraPositionZ(int angle)
 {
     qNormalizeAngle(angle);
-    zRot = angle;
+    zEye = angle;
     is2DView = false;
     update();
 }
@@ -230,9 +230,9 @@ void GLWidget::initializeGL()
 {
     const QColor color(mpHost->mBgColor_2);
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-    xRot = 1;
-    yRot = 5;
-    zRot = 10;
+    xEye = 10.0;
+    yEye = 1.0;
+    zEye = 0.0;
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glShadeModel(GL_SMOOTH);
@@ -251,6 +251,17 @@ void GLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
     mMapCenterX = xPos;
     mMapCenterY = yPos;
     mMapCenterZ = zPos;
+    update();
+}
+
+void GLWidget::manualGluLookAt(float xE, float yE, float zE, float xU, float yU, float zU)
+{
+    xEye = xE;
+    yEye = yE;
+    zEye = zE;
+    xUp = xU;
+    yUp = yU;
+    zUp = zU;
     update();
 }
 
@@ -317,9 +328,9 @@ void GLWidget::paintGL()
         return;
     }
     if (pArea->gridMode) {
-        xRot = 0.0;
-        yRot = 0.0;
-        zRot = 15.0;
+        xEye = 0.0;
+        yEye = 0.0;
+        zEye = 15.0;
     }
     zmax = static_cast<float>(pArea->max_z);
     zmin = static_cast<float>(pArea->min_z);
@@ -360,7 +371,7 @@ void GLWidget::paintGL()
     glEnable(GL_LIGHT0);
     //glEnable(GL_LIGHT1);
 
-    if (zRot <= 0) {
+    if (zEye <= 0) {
         zPlane = zmax;
     } else {
         zPlane = zmin;
@@ -425,7 +436,7 @@ void GLWidget::paintGL()
                               {0.2, 0.1, 0.3, 0.2}};
 
     while (true) {
-        if (zRot <= 0) {
+        if (zEye <= 0) {
             if (zPlane < zmin) {
                 break;
             }
@@ -510,7 +521,7 @@ void GLWidget::paintGL()
                     const QVector3D p1(ex, ey, ez);
                     const QVector3D p2(rx, ry, rz);
                     glLoadIdentity();
-                    gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                    gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                     glScalef(0.1, 0.1, 0.1);
                     // if (areaExit) {
                     //    glLineWidth(1); //1/mScale+2);
@@ -571,7 +582,7 @@ void GLWidget::paintGL()
                         glMateriali(GL_FRONT, GL_SHININESS, 1);
                         glColor4f(85.0 / 255.0, 170.0 / 255.0, 0.0 / 255.0, 1.0);
                         glLoadIdentity();
-                        gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                        gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                         glScalef(0.1, 0.1, 0.1);
                         if (pR->getNorth() == k) {
                             glTranslatef(p2.x(), p2.y() + 1, p2.z());
@@ -817,7 +828,7 @@ void GLWidget::paintGL()
                         glMateriali(GL_FRONT, GL_SHININESS, 1);
                         glDisable(GL_DEPTH_TEST);
                         glLoadIdentity();
-                        gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                        gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                         glScalef(0.05, 0.05, 0.020);
                         if (pR->getNorth() == k) {
                             glTranslatef(2 * p2.x(), 2 * (p2.y() + 1), 5.0 * (p2.z() + 0.25));
@@ -920,7 +931,7 @@ void GLWidget::paintGL()
                     const QVector3D p1(ex, ey, ez);
                     const QVector3D p2(rx, ry, rz);
                     glLoadIdentity();
-                    gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                    gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                     glScalef(0.1, 0.1, 0.1);
                     // if (areaExit) {
                     //    glLineWidth(1); //1/mScale+2);
@@ -983,7 +994,7 @@ void GLWidget::paintGL()
                         glMateriali(GL_FRONT, GL_SHININESS, 1);
                         glColor4f(85.0 / 255.0, 170.0 / 255.0, 0.0 / 255.0, 1.0);
                         glLoadIdentity();
-                        gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                        gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                         glScalef(0.1, 0.1, 0.1);
                         if (pR->getNorth() == k) {
                             glTranslatef(p2.x(), p2.y() + 1, p2.z());
@@ -1225,7 +1236,7 @@ void GLWidget::paintGL()
                         glMateriali(GL_FRONT, GL_SHININESS, 36);
                         glDisable(GL_DEPTH_TEST);
                         glLoadIdentity();
-                        gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                        gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                         glScalef(0.05, 0.05, 0.020);
                         if (pR->getNorth() == k) {
                             glTranslatef(2 * p2.x(), 2 * (p2.y() + 1), 5.0 * (p2.z() + 0.25));
@@ -1310,7 +1321,7 @@ void GLWidget::paintGL()
             }
         }
 
-        if (zRot <= 0) {
+        if (zEye <= 0) {
             zPlane -= 1.0;
         } else {
             zPlane += 1.0;
@@ -1389,7 +1400,7 @@ void GLWidget::paintGL()
                 glColor4f(planeColor2[ef][0], planeColor2[ef][1], planeColor2[ef][2], planeColor2[ef][3]);
 
                 glLoadIdentity();
-                gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
                 if (pArea->gridMode) {
                     glScalef(0.2, 0.2, 0.1);
                     glTranslatef(0.5 * rx, 0.5 * ry, rz);
@@ -1618,7 +1629,7 @@ void GLWidget::paintGL()
                 glMateriali(GL_FRONT, GL_SHININESS, 96);
                 glDisable(GL_DEPTH_TEST);
                 glLoadIdentity();
-                gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+                gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
 
                 if (pArea->gridMode) {
                     if ((rz == pz) && (rx == px) && (ry == py)) {
@@ -1694,7 +1705,7 @@ void GLWidget::paintGL()
 
             float mc3[] = {0.2f, 0.2f, 0.7f, 1.0f};
             glLoadIdentity();
-            gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+            gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
             if (pArea->gridMode) {
                 glScalef(0.2, 0.2, 0.1);
                 glTranslatef(0.5 * rx, 0.5 * ry, rz);
@@ -1920,7 +1931,7 @@ void GLWidget::paintGL()
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mc3);
             glMateriali(GL_FRONT, GL_SHININESS, 6);
             glLoadIdentity();
-            gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
+            gluLookAt(px * 0.1 + xEye, py * 0.1 + yEye, pz * 0.1 + zEye, px * 0.1, py * 0.1, pz * 0.1, xUp, yUp, zUp);
             if (pArea->gridMode) {
                 if ((rz == pz) && (rx == px) && (ry == py)) {
                     glScalef(0.1, 0.1, 0.020);

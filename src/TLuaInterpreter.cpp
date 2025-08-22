@@ -5512,6 +5512,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "unzipAsync", TLuaInterpreter::unzipAsync);
     lua_register(pGlobalLua, "setMapWindowTitle", TLuaInterpreter::setMapWindowTitle);
     lua_register(pGlobalLua, "getMudletInfo", TLuaInterpreter::getMudletInfo);
+    lua_register(pGlobalLua, "manualGluLookAt", TLuaInterpreter::manualGluLookAt);
     lua_register(pGlobalLua, "getMapBackgroundColor", TLuaInterpreter::getMapBackgroundColor);
     lua_register(pGlobalLua, "setMapBackgroundColor", TLuaInterpreter::setMapBackgroundColor);
     lua_register(pGlobalLua, "getMapRoomExitsColor", TLuaInterpreter::getMapRoomExitsColor);
@@ -7120,6 +7121,27 @@ int TLuaInterpreter::getMapBackgroundColor(lua_State* L)
     lua_pushnumber(L, color.blue());
     lua_pushnumber(L, color.alpha());
     return 4;
+}
+
+int TLuaInterpreter::manualGluLookAt(lua_State* L)
+{
+    const float xEye = getVerifiedFloat(L, __func__, 1, "x perspective coord");
+    const float yEye = getVerifiedFloat(L, __func__, 2, "y perspective coord");
+    const float zEye = getVerifiedFloat(L, __func__, 3, "z perspective coord");
+    const float xUp = getVerifiedFloat(L, __func__, 4, "x up coord");
+    const float yUp = getVerifiedFloat(L, __func__, 5, "y up coord");
+    const float zUp = getVerifiedFloat(L, __func__, 6, "z up coord");
+
+
+    auto& host = getHostFromLua(L);
+    if (host.mpMap && host.mpMap->mpMapper && host.mpMap->mpMapper->glWidget) {
+        host.mpMap->mpMapper->glWidget->manualGluLookAt(xEye, yEye, zEye, xUp, yUp, zUp);
+        lua_pushboolean(L, true);
+    }
+    else {
+        lua_pushboolean(L, false);
+    }
+    return 1;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setMapBackgroundColor

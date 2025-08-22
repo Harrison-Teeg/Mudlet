@@ -50,6 +50,7 @@ public:
 
     void wheelEvent(QWheelEvent* e) override;
     void setViewCenter(int, int, int, int);
+    void manualGluLookAt(float, float, float, float, float, float);
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
@@ -102,9 +103,13 @@ private:
     int mMapCenterZ = 0;
     bool mShiftMode = false;
 
-    float xRot = 1.0;
-    float yRot = 5.0;
-    float zRot = 10.0;
+    float xEye = 10.0;
+    float yEye = 1.0;
+    float zEye = 0.0;
+    float xUp = 0.0;
+    float yUp = 0.0;
+    float zUp = 1.0;
+    // Scales the size of rooms compared to the space between them - currently
     // Scales the size of rooms compared to the space between them - currently
     // hard coded to be a quarter (would be equivalent to a 2D room size setting
     // of "2.5"):
